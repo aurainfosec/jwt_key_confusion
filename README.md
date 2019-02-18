@@ -96,7 +96,7 @@ $ openssl x509 -in cert.pem -pubkey -noout > key.pem
    and exponent (`e` parameter), do:
 
 ```
-$ sed 's/-/+/g;s/_/\//g' <<<"<base64 of modulus>"
+$ sed 's/-/+/g;s/_/\//g' <<<"{base64 of modulus}"
 ```
 
    in order to replace the URI-safe charset of Base64 with the traditional
