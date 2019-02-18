@@ -12,13 +12,6 @@ public key, as usual, but now using a symmetric algorithm, and hopefully
 succeed for one of the generated signatures. See also
 [here](https://www.nccgroup.trust/uk/about-us/newsroom-and-events/blogs/2019/january/jwt-attack-walk-through/)
 
-# Table of Contents
-
-   * [Getting the public key](#getting-the-public-key)
-      * [From the SSL certificate](#from-the-ssl-certificate)
-      * [From the OpenID conf](#from-the-openid-conf)
-   * [TO DO](#to-do)
-
 # Usage
 
 ```
@@ -106,10 +99,10 @@ $ openssl x509 -in cert.pem -pubkey -noout > key.pem
 $ sed 's/-/+/g;s/_/\//g' <<<"<base64 of modulus>"
 ```
 
-	in order to replace the URI-safe charset of Base64 with the traditional
-	charset of Base64 (see [this](https://stackoverflow.com/a/13195218/8457586)),
-	then use [this](https://superdry.apphb.com/tools/online-rsa-key-converter)
-	online tool to generate a PEM public key from the modulus and exponent. 
+   in order to replace the URI-safe charset of Base64 with the traditional
+   charset of Base64 (see [this](https://stackoverflow.com/a/13195218/8457586)),
+   then use [this](https://superdry.apphb.com/tools/online-rsa-key-converter)
+   online tool to generate a PEM public key from the modulus and exponent. 
 
 # TO DO
 
