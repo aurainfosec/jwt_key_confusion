@@ -68,9 +68,10 @@ if not token:
     sys.exit(2)
 claims = jwt.decode(token, verify=False)
 headers = jwt.get_unverified_header(token)
-audience = None
-if 'aud' in claims:
+try:
     audience = claims['aud']
+except KeyError:
+    audience = None
 
 try:
     jwt.decode(token, pubkey, algorithms=args.from_algorithm,
@@ -84,6 +85,14 @@ except: #TODO: catch only jwt.exceptions?
 ########## Save original header
 del headers['alg']
 del headers['typ']
+try:
+    del headers['kid']
+except KeyError:
+    pass
+try:
+    del headers['x5t']
+except KeyError:
+    pass
 
 ########## Case 1: sign with exact public key only
 if args.no_vary:
