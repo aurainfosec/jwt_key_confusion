@@ -63,12 +63,18 @@ pubkey = read_file(args.key_file)
 if not pubkey:
     sys.exit(2)
 
-token = read_file(args.jwt_file)
+token = read_file(args.jwt_file).strip('\n')
 if not token:
     sys.exit(2)
+claims = jwt.decode(token, verify=False)
+headers = jwt.get_unverified_header(token)
+audience = None
+if 'aud' in claims:
+    audience = claims['aud']
 
 try:
-    jwt.decode(token, pubkey, algorithms=args.from_algorithm)
+    jwt.decode(token, pubkey, algorithms=args.from_algorithm,
+            audience=audience)
 except jwt.exceptions.InvalidSignatureError:
     sys.stderr.write('Wrong public key! Aborting.')
     sys.exit(1)
@@ -76,8 +82,6 @@ except: #TODO: catch only jwt.exceptions?
     pass
 
 ########## Save original header
-claims = jwt.decode(token, verify=False)
-headers = jwt.get_unverified_header(token)
 del headers['alg']
 del headers['typ']
 
