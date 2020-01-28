@@ -45,7 +45,7 @@ in their SSL certificate, so try this, replacing `{server}` with the
 domain name and `{HTTPS` port} with e.g. 443:
 
 ```bash
-$ echo QUIT | openssl s_client -connect "{server}{HTTPS port}" -showcerts > /dev/null
+$ echo QUIT | openssl s_client -connect "{server}:{HTTPS port}" -showcerts 2> /dev/null > cert.pem
 ```
 
 then extract the public key from it:
