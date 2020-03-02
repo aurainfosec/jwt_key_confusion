@@ -83,8 +83,14 @@ except: #TODO: catch only jwt.exceptions?
     pass
 
 ########## Save original header
-del headers['alg']
-del headers['typ']
+try:
+    del headers['alg']
+except KeyError:
+    pass
+try:
+    del headers['typ']
+except KeyError:
+    pass
 try:
     del headers['kid']
 except KeyError:
