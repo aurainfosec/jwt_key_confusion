@@ -58,25 +58,25 @@ $ openssl x509 -in cert.pem -pubkey -noout > key.pem
 
 1. From the OpenID conf
 
-  Servers which use OpenID keep the configuration in a well known
-  location. If the OpenID endpoint is e.g.
-  `http://example.com/service/auth/`, then try:
-  
-  ```
-  $ curl http://example.com/service/auth/.well-known/openid-configuration
-  ```
-  
-  then look for the `jwks_uri` parameter. This points to the resource
-  containing the public keys and their IDs.
+    Servers which use OpenID keep the configuration in a well known
+    location. If the OpenID endpoint is e.g.
+    `http://example.com/service/auth/`, then try:
+    
+    ```
+    $ curl http://example.com/service/auth/.well-known/openid-configuration
+    ```
+    
+    then look for the `jwks_uri` parameter. This points to the resource
+    containing the public keys and their IDs.
 
 2. From the OpenID conf
 
-  If the server doesn't use OpenID, it may still provide a JWKS under the
-  following URL
-  
-  ```
-  $ curl http://example.com/.well-known/jwks.json
-  ```
+    If the server doesn't use OpenID, it may still provide a JWKS under the
+    following URL
+    
+    ```
+    $ curl http://example.com/.well-known/jwks.json
+    ```
 
 If you found the JWKS JSON configuration, then fecth it and choose the key
 with the same `kid` as the `kid` in the JWT headers:
