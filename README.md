@@ -54,26 +54,38 @@ then extract the public key from it:
 $ openssl x509 -in cert.pem -pubkey -noout > key.pem
 ```
 
-## From the OpenID conf
+## From the JWKS
 
-Servers which use OpenID keep the configuration in a well known
-location. If the OpenID endpoint is e.g.
-`http://example.com/service/auth/`, then try:
+1. From the OpenID conf
 
-```
-$ curl http://example.com/service/auth/.well-known/openid-configuration
-```
+  Servers which use OpenID keep the configuration in a well known
+  location. If the OpenID endpoint is e.g.
+  `http://example.com/service/auth/`, then try:
+  
+  ```
+  $ curl http://example.com/service/auth/.well-known/openid-configuration
+  ```
+  
+  then look for the `jwks_uri` parameter. This points to the resource
+  containing the public keys and their IDs.
 
-then look for the `jwks_uri` parameter. This points to the resource
-containing the public keys and their IDs. Fetch it, then choose the
-key with the same `kid` as the `kid` in the JWT headers:
+2. From the OpenID conf
+
+  If the server doesn't use OpenID, it may still provide a JWKS under the
+  following URL
+  
+  ```
+  $ curl http://example.com/.well-known/jwks.json
+  ```
+
+If you found the JWKS JSON configuration, then fecth it and choose the key
+with the same `kid` as the `kid` in the JWT headers:
 
 ```
 $ cut -d. -f1 <<<"{JWT here}" | base64 -d
 ```
 
-After you have the JWT keys configuration (from the `jwks_uri`
-endpoint), and
+After you have the JWT keys configuration (from the JWKS endpoint), and
 
 1. you get the PEM certificate (`x5c` parameter), but no public key,
    save the value of the certificate to a file (`cert.pem`), adding
