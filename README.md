@@ -108,12 +108,14 @@ $ openssl x509 -in cert.pem -pubkey -noout > key.pem
    and exponent (`e` parameter), do:
 
 ```
-$ sed 's/-/+/g;s/_/\//g' <<<"{base64 of modulus}"
+$ res=$(sed 's/-/+/g;s/_/\//g' <<<"${base64 of modulus}"); n=$(( 4 - (${#res} % 4) )); echo -n "${res}"; printf "%0.s=" $(seq 1 $n);
 ```
 
    in order to replace the URI-safe charset of Base64 with the traditional
-   charset of Base64 (see [this](https://stackoverflow.com/a/13195218/8457586)),
-   then use [this](https://superdry.apphb.com/tools/online-rsa-key-converter)
+   charset of Base64 (see
+   [this](https://stackoverflow.com/a/13195218/8457586)), and to pad it
+   with `=` as necessary. Then use
+   [this](https://superdry.apphb.com/tools/online-rsa-key-converter)
    online tool to generate a PEM public key from the modulus and exponent. 
 
 # TO DO
