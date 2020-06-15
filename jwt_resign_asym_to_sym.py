@@ -133,18 +133,21 @@ sep = '\n-----------------------------------------------------------------\n'
 for lgt in range(len(hdr), len(meat) + 1):
     secret = '\n'.join([hdr] + filter(
         None, re.split('(.{%s})' % lgt, meat)) + [ftr])
-    sys.stdout.write(
+    sys.stderr.write(
         ('{sep}--- JWT signed with public key split at lines of length '
-         '{lgt}: ---{sep}{jwt}').format(
-             sep=sep, lgt=lgt,
-             jwt=jwt.encode(claims, secret,
-                            algorithm=args.to_algorithm,
-                            headers=headers).decode('utf-8')))
+         '{lgt}: ---{sep}').format(
+             sep=sep, lgt=lgt))
+    sys.stdout.write('{}\n'.format(jwt.encode(
+        claims, secret,
+        algorithm=args.to_algorithm,
+        headers=headers).decode('utf-8')))
+
     secret += '\n'
-    sys.stdout.write(
+    sys.stderr.write(
         ('{sep}------------- As above, but with a trailing '
-         'newline: ------------{sep}{jwt}').format(
-             sep=sep, jwt=jwt.encode(
-                 claims, secret,
-                 algorithm=args.to_algorithm,
-                 headers=headers).decode('utf-8')))
+         'newline: ------------{sep}').format(
+             sep=sep))
+    sys.stdout.write('{}\n'.format(jwt.encode(
+        claims, secret,
+        algorithm=args.to_algorithm,
+        headers=headers).decode('utf-8')))
