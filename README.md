@@ -89,11 +89,12 @@ After you have the JWT keys configuration (from the JWKS endpoint), and
 
 1. you get the PEM certificate (`x5c` parameter), but no public key,
    save the value of the certificate to a file (`cert.pem`), adding
-   the header and footer lines as follows:
+   the header and footer lines as follows (pad `x5c` with `=` as necessary,
+   i.e.  so that the number of characters in the body is a multiple of 4):
 
 ```
 -----BEGIN CERTIFICATE-----
-{value of x5c parameter}
+{value of x5c parameter, padded with =}
 -----END CERTIFICATE-----
 ```
 
