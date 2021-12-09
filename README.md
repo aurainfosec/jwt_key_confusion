@@ -1,3 +1,5 @@
+Requires `PyJWT`, not `jwt`.
+
 # Background
 
 Some JWT libraries are vulnerable to a known attack which changes

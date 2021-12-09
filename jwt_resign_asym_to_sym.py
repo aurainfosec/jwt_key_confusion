@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 #############################################################
 # @AaylaSecura1138, github.com/aayla-secura
 # Modify and distribute as you wish
@@ -64,6 +64,10 @@ parser.add_argument(
     default=False, action='store_true',
     help='''Verify that the given JWT with the given public key.''')
 parser.add_argument(
+    '-d', '--delete-headers', dest='delete_headers',
+    default=False, action='store_true',
+    help='''Delete original headers.''')
+parser.add_argument(
     '-n', '--no-vary', dest='no_vary',
     default=False, action='store_true',
     help='''Sign only once with the exact key given.''')
@@ -74,9 +78,11 @@ pubkey = read_file(args.key_file)
 if not pubkey:
     sys.exit(2)
 
-token = read_file(args.jwt_file).strip('\n')
+token = read_file(args.jwt_file)
 if not token:
     sys.exit(2)
+token = token.strip('\n')
+
 claims = jwt.decode(token, verify=False)
 headers = jwt.get_unverified_header(token)
 try:
@@ -97,18 +103,19 @@ try:
     del headers['alg']
 except KeyError:
     pass
-try:
-    del headers['typ']
-except KeyError:
-    pass
-try:
-    del headers['kid']
-except KeyError:
-    pass
-try:
-    del headers['x5t']
-except KeyError:
-    pass
+if args.delete_headers:
+    try:
+        del headers['typ']
+    except KeyError:
+        pass
+    try:
+        del headers['kid']
+    except KeyError:
+        pass
+    try:
+        del headers['x5t']
+    except KeyError:
+        pass
 
 ########## Case 1: sign with exact public key only
 if args.no_vary:
@@ -131,8 +138,8 @@ meat = ''.join(pubkey.split('\n')[1:-1])
 
 sep = '\n-----------------------------------------------------------------\n'
 for lgt in range(len(hdr), len(meat) + 1):
-    secret = '\n'.join([hdr] + filter(
-        None, re.split('(.{%s})' % lgt, meat)) + [ftr])
+    secret = '\n'.join([hdr] + list(filter(
+        None, re.split('(.{%s})' % lgt, meat))) + [ftr])
     sys.stderr.write(
         ('{sep}--- JWT signed with public key split at lines of length '
          '{lgt}: ---{sep}').format(
