@@ -9,10 +9,19 @@ import sys
 import re
 import argparse
 
+def verify_sig(token, pubkey, **kwargs):
+    for suffix in ['\n', '']:
+        try:
+            jwt.decode(token, (pubkey + suffix), **kwargs)
+        except jwt.exceptions.InvalidSignatureError:
+            continue
+        return True, pubkey + suffix
+    return False, pubkey
+
 def read_file(fname):
     with open(fname, 'r') as f:
         try:
-            return f.read()
+            return f.read().strip('\n').replace('\r', '')
         except IOError as e:
             sys.stderr.write('Cannot read {}: {}\n'.format(fname, e))
             return None
@@ -20,18 +29,12 @@ def read_file(fname):
 ########## "Fix" pyjwt
 # pyjwt's HMACAlgorithm doesn't allow using public keys as secrets, so
 # we override it here, removing the check
-class HMACAlgorithm(jwt.algorithms.HMACAlgorithm):
-    def prepare_key(self, key):
-        key = jwt.utils.force_bytes(key)
-        return key
+def prepare_key(self, key):
+    key = jwt.utils.force_bytes(key)
+    return key
 
 
-jwt.api_jwt._jwt_global_obj._algorithms['HS256'] = \
-    HMACAlgorithm(HMACAlgorithm.SHA256)
-jwt.api_jwt._jwt_global_obj._algorithms['HS384'] = \
-    HMACAlgorithm(HMACAlgorithm.SHA384)
-jwt.api_jwt._jwt_global_obj._algorithms['HS512'] = \
-    HMACAlgorithm(HMACAlgorithm.SHA512)
+jwt.algorithms.HMACAlgorithm.prepare_key = prepare_key
 
 ########## Read cmdline
 parser = argparse.ArgumentParser(
@@ -81,9 +84,9 @@ if not pubkey:
 token = read_file(args.jwt_file)
 if not token:
     sys.exit(2)
-token = token.strip('\n')
 
-claims = jwt.decode(token, verify=False)
+claims = jwt.decode(token, algorithms=[args.from_algorithm],
+                    options=dict(verify_signature=False))
 headers = jwt.get_unverified_header(token)
 try:
     audience = claims['aud']
@@ -91,10 +94,11 @@ except KeyError:
     audience = None
 
 if args.verify_sig:
-    try:
-        jwt.decode(token, pubkey, algorithms=args.from_algorithm,
-                   audience=audience)
-    except jwt.exceptions.InvalidSignatureError:
+    ok, pubkey = verify_sig(token,
+                            pubkey,
+                            algorithms=[args.from_algorithm],
+                            audience=audience)
+    if not ok:
         sys.stderr.write('Wrong public key! Aborting.\n')
         sys.exit(1)
 
@@ -122,11 +126,11 @@ if args.no_vary:
     sys.stdout.write(jwt.encode(
         claims, pubkey,
         algorithm=args.to_algorithm,
-        headers=headers).decode('utf-8'))
+        headers=headers))
     sys.exit(0)
 
 ########## Case 2: vary newlines
-lines = pubkey.rstrip('\n').split('\n')
+lines = pubkey.split('\n')
 if len(lines) < 3:
     sys.stderr.write('Make sure public key is in a PEM format and '
                      'includes header and footer lines!\n')
@@ -147,7 +151,7 @@ for lgt in range(len(hdr), len(meat) + 1):
     sys.stdout.write('{}\n'.format(jwt.encode(
         claims, secret,
         algorithm=args.to_algorithm,
-        headers=headers).decode('utf-8')))
+        headers=headers)))
 
     secret += '\n'
     sys.stderr.write(
@@ -157,4 +161,4 @@ for lgt in range(len(hdr), len(meat) + 1):
     sys.stdout.write('{}\n'.format(jwt.encode(
         claims, secret,
         algorithm=args.to_algorithm,
-        headers=headers).decode('utf-8')))
+        headers=headers)))
