@@ -108,10 +108,11 @@ $ openssl x509 -in cert.pem -pubkey -noout > key.pem
 
 2. you don't get the PEM certificate (`x5c` paramter), but instead
    have the public key as a combination of a modulus (`n` parameter)
-   and exponent (`e` parameter), do:
+   and exponent (`e` parameter), do (replacing `$modulus` with the value of the
+   `n` parameter):
 
 ```
-$ res=$(sed 's/-/+/g;s/_/\//g' <<<"${base64 of modulus}"); n=$(( 4 - (${#res} % 4) )); echo -n "${res}"; printf "%0.s=" $(seq 1 $n);
+$ res=$(sed 's/-/+/g;s/_/\//g' <<<"$modulus"); n=$(( 4 - (${#res} % 4) )); echo -n "${res}"; printf "%0.s=" $(seq 1 $n);
 ```
 
    in order to replace the URI-safe charset of Base64 with the traditional
