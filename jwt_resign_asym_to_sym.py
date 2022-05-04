@@ -74,6 +74,13 @@ parser.add_argument(
     '-n', '--no-vary', dest='no_vary',
     default=False, action='store_true',
     help='''Sign only once with the exact key given.''')
+parser.add_argument(
+    '-v', '--verbose', dest='verbose',
+    default=False, action='store_true',
+    help='''Print explanation for each generated token.''')
+parser.add_argument(
+    '-o', '--output', dest='output',
+    metavar='FILE', help='''Save output to FILE.''')
 args = parser.parse_args()
 
 ########## Verify token with public key
@@ -140,25 +147,36 @@ hdr = pubkey.split('\n')[0]
 ftr = pubkey.split('\n')[-1]
 meat = ''.join(pubkey.split('\n')[1:-1])
 
+output = sys.stdout
+verbose_output = sys.stderr
+if args.output is not None:
+    output = open(args.output, 'w')
+    verbose_output = output
+
 sep = '\n-----------------------------------------------------------------\n'
 for lgt in range(len(hdr), len(meat) + 1):
     secret = '\n'.join([hdr] + list(filter(
         None, re.split('(.{%s})' % lgt, meat))) + [ftr])
-    sys.stderr.write(
-        ('{sep}--- JWT signed with public key split at lines of length '
-         '{lgt}: ---{sep}').format(
-             sep=sep, lgt=lgt))
-    sys.stdout.write('{}\n'.format(jwt.encode(
+    if args.verbose:
+        verbose_output.write(
+            ('{sep}--- JWT signed with public key split at lines of length '
+             '{lgt}: ---{sep}').format(
+                 sep=sep, lgt=lgt))
+    output.write('{}\n'.format(jwt.encode(
         claims, secret,
         algorithm=args.to_algorithm,
         headers=headers)))
 
     secret += '\n'
-    sys.stderr.write(
-        ('{sep}------------- As above, but with a trailing '
-         'newline: ------------{sep}').format(
-             sep=sep))
-    sys.stdout.write('{}\n'.format(jwt.encode(
+    if args.verbose:
+        verbose_output.write(
+            ('{sep}------------- As above, but with a trailing '
+             'newline: ------------{sep}').format(
+                 sep=sep))
+    output.write('{}\n'.format(jwt.encode(
         claims, secret,
         algorithm=args.to_algorithm,
         headers=headers)))
+
+if args.output is not None:
+    output.close()
